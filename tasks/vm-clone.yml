@@ -1,0 +1,121 @@
+---
+
+- name: Check params for clone
+  fail:
+    msg: "Not sufficient parameters!! You should set src_vm and dest_vm"
+  when:
+  - src_vm is undefined or dest_vm is undefined
+
+- name: Check if the same VM exist
+  virt: command=status name="{{dest_vm}}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: vm_exist
+  ignore_errors: yes
+
+- name: Wait for shutdown state of vm
+  shell: >
+      virsh dominfo {{ dest_vm }} |grep State|awk '{print $2}'
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: shutdown_vm
+  until: shutdown_vm.stdout == 'shut'
+  when: vm_exist is succeeded and vm_recreate|bool
+
+- name: Delete the VM if the same VM exist
+  block:
+    - shell: >
+        virsh vol-list "{{ storage_pool | default('default') }}" | grep "{{dest_vm}}" |awk '{print $1}'
+      register: vm_vol_list
+    - command: "virsh vol-delete --pool {{ pool_name }} {{ item }}"
+      with_items:
+      - "{{vm_vol_list.stdout_lines}}"
+      when: vm_vol_list.stdout_lines|length != 0
+    - virt: command=undefine name="{{dest_vm}}"
+      register: undefine_vm
+      until: "{{undefine_vm is succeeded}}"
+    - shell: sleep 1
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  when: vm_exist is succeeded and vm_recreate|bool
+
+- name: Create VM data dir where store vm information
+  file: "state=directory path={{ vm_data_dir }}/{{ dest_vm }} force=yes"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Clone Block
+  block:
+    - command: "virsh shutdown {{src_vm}}"
+      ignore_errors: yes # in case, the vm is already shutdow.
+
+    - name: Wait for shutdown state of vm
+      shell: >
+          virsh dominfo {{ src_vm }} |grep State|awk '{print $2}'
+      become: yes
+      delegate_to: "{{ kvm_install_host }}"
+      register: shutdown_vm
+      until: shutdown_vm.stdout == 'shut'
+
+    - command: "virt-clone -o {{src_vm}} --name {{dest_vm}} --auto-clone"
+    - command: "virsh start {{dest_vm}}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  when: operate == 'clone'
+
+- name: Get MAC address
+  shell: >
+     virsh dumpxml {{ dest_vm }} | awk -F\' '/mac address/ {print $2}'
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: mac_info
+
+- name: Gather bridge device name
+  shell: >
+    virsh net-info {{ vm_network_br | default('default') }} |grep Bridge|awk '{print $2}'
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: vm_network_br_dev_name
+
+- name: Wait for IP Ready of the VM
+  wait_for:
+    path: "/var/lib/libvirt/dnsmasq/{{ vm_network_br_dev_name.stdout }}.status"
+    search_regex: "{{ mac_info.stdout }}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Gather IP address of the VM
+  shell: >
+     grep -B1 {{ mac_info.stdout }} /var/lib/libvirt/dnsmasq/{{ vm_network_br_dev_name.stdout }}.status | head -n 1 | awk '{print $2}' | sed -e s/\"//g -e s/,//
+  register: vm_ip
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Write data
+  template: src=vm_info.j2 dest="{{ vm_data_dir }}/{{ dest_vm }}/vm_info"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Add Known host
+  shell: "ssh-keyscan -H {{ vm_ip.stdout }}  >> ~/.ssh/known_hosts"
+  delegate_to: "{{ kvm_install_host }}"
+  ignore_errors: yes
+  register: add_known_host
+  until: "{{add_known_host is succeeded}}"
+  delay: 1
+
+- name: Change hostname if dest_vm_hostname set
+  shell: "ssh -o StrictHostKeyChecking=no centos@{{ vm_ip.stdout }} -- sudo hostnamectl set-hostname {{ dest_vm_hostname }}"
+  delegate_to: "{{ kvm_install_host }}"
+  ignore_errors: yes
+  register: change_hostname
+  until: "{{ change_hostname is succeeded}}"
+  delay: 5
+  when: dest_vm_hostname is defined
+
+- name: Add Hostname to data file
+  shell: >
+    echo "HostName: {{ dest_vm_hostname }}" >> {{ vm_data_dir }}/{{ dest_vm }}/vm_info
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  when: dest_vm_hostname is defined and change_hostname is succeeded

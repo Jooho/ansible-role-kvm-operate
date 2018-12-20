@@ -1,0 +1,5 @@
+kvm_install_host: localhost
+kvm_vm_pool_dir: /home/jooho/KVM
+
+vm_data_dir: /home/jooho/kvm/vms
+vm_recreate: false
