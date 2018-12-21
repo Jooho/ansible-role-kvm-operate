@@ -14,8 +14,7 @@
     msg: "Not sufficient parameters!! You should set disk_size or target_vm"
   when:
   - operate == 'attach'
-  - target_vm is defined
-  - disk_size is undefined
+  - target_vm is undefined or disk_size is undefined
 
 - name: Change size unit(G) to number(1000)
   set_fact:
