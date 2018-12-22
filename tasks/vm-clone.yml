@@ -13,6 +13,11 @@
   register: vm_exist
   ignore_errors: yes
 
+- name: Fail if the same VM exist
+  fail:
+    msg: "Fail because the same VM exist and vm_recreate is false"
+  when: vm_exist is succeeded and vm_recreate|bool
+
 - name: Wait for shutdown state of vm
   shell: >
       virsh dominfo {{ dest_vm }} |grep State|awk '{print $2}'
@@ -20,7 +25,6 @@
   delegate_to: "{{ kvm_install_host }}"
   register: shutdown_vm
   until: shutdown_vm.stdout == 'shut'
-  when: vm_exist is succeeded and vm_recreate|bool
 
 - name: Delete the VM if the same VM exist
   block:
