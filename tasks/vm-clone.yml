@@ -13,10 +13,11 @@
   register: vm_exist
   ignore_errors: yes
 
+
 - name: Fail if the same VM exist
   fail:
     msg: "Fail because the same VM exist and vm_recreate is false"
-  when: vm_exist is succeeded and vm_recreate|bool
+  when: vm_exist is succeeded and vm_recreate == false
 
 - name: Wait for shutdown state of vm
   shell: >
