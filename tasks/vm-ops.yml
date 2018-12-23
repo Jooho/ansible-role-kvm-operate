@@ -45,11 +45,11 @@
   - operate == 'teardown'
   ignore_errors: yes
 
-# - name: Gather VM list
-#   virt: command=list_vms
-#   become: yes
-#   delegate_to: "{{ kvm_install_host }}"
-#   register: vm_list
+- name: Gather VM list
+  virt: command=list_vms
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: vm_list
 
 # - debug: msg="{{ item.find(prefix_vm) }}"
 #   with_items:
@@ -63,7 +63,7 @@
   - "{{ vm_list.list_vms }}"
   when:
   - prefix_vm is defined
-  - item.find(prefix_vm) == 0
+  - item.find(prefix_vm) != -1
   ignore_errors: yes
 
 - name: Undefine for multiple VMs
@@ -74,7 +74,7 @@
   - "{{ vm_list.list_vms }}"
   when:
   - prefix_vm is defined
-  - item.find(prefix_vm) == 0
+  - item.find(prefix_vm) != -1
   - operate == 'teardown'
   ignore_errors: yes
 
@@ -86,6 +86,6 @@
   - "{{ vm_list.list_vms }}"
   when:
   - prefix_vm is defined
-  - item.find(prefix_vm) == 0
+  - item.find(prefix_vm) != -1
   - operate == 'teardown'
   ignore_errors: yes
