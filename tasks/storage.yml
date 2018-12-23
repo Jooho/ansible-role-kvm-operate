@@ -51,7 +51,7 @@
 # command: "dd if=/dev/zero of={{ kvm_vm_pool_dir }}/{{ target_vm }}_extra_disk_{{ disk_number.stdout }}.qcow2 bs=1M count={{ disk_size|regex_replace('[A-Z]','')|int * disk_unit|int }}"
 
 - name: Create qcow2 image
-  command: "qemu-img create  {{ kvm_vm_pool_dir }}/{{ cloud_init_vm_image }} -f qcow2 {{ kvm_vm_pool_dir }}/{{ target_vm }}.qcow2 {{ disk_size }}"  
+  command: "qemu-img create  -f qcow2 {{ kvm_vm_pool_dir }}/{{ target_vm }}.qcow2 {{ disk_size }}"  
   become: yes
   delegate_to: localhost
   when: not disk_exist.stat.exists
