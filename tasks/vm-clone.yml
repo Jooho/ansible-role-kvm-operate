@@ -121,15 +121,17 @@
   delegate_to: "{{ kvm_install_host }}"
   ignore_errors: yes
   register: add_known_host
-  until: "{{ add_known_host is succeeded }}"
-  delay: 1
+  until: "add_known_host is succeeded and not add_known_host.stderr.find('refused') != -1 and add_known_host.stderr.find('') != -1"
+  retries: 180
+  delay: 5
 
 - name: Change hostname if dest_vm_hostname set
   shell: "ssh -o StrictHostKeyChecking=no centos@{{ vm_ip.stdout }} -- sudo hostnamectl set-hostname {{ dest_vm_hostname }}"
   delegate_to: "{{ kvm_install_host }}"
   ignore_errors: yes
   register: change_hostname
-  until: "{{ change_hostname is succeeded}}"
+  until: change_hostname is succeeded 
+  retries: 180
   delay: 5
   when: dest_vm_hostname is defined
 
