@@ -22,6 +22,7 @@ Role Variables
 | operate          | undefined     | yes     | Set start/stop/suspend/destory/teardown for vm Or attach for storage                |
 | src_vm           | undefined     | yes     | Clone operate params. The base vm name                                              |
 | dest_vm          | undefined     | yes     | Clone operate params. A new vm name                                                 |
+| vm_memory          | undefined     | no    | Clone operate params. A new vm max memory size 
 | dest_vm_hostname | undefined     | no      | Clone operate params. Set hostname if you want to update hostname                   |
 | vm_network_br    | default       | no      | Set if cloned vm use differen br                                                    |
 | prefix_vm        | undefined     | yes     | start/stop/suspend/destory/clone params. For multiple VMs                           |

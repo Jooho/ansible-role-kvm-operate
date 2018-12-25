@@ -71,6 +71,10 @@
       until: shutdown_vm.stdout == 'shut'
 
     - command: "virt-clone -o {{src_vm}} --name {{dest_vm}} --auto-clone"
+    
+    - command: "virsh setmaxmem {{ vm_memory }} {{dest_vm}}"
+      when: vm_memory is defined
+
     - command: "virsh start {{dest_vm}}"
   become: yes
   delegate_to: "{{ kvm_install_host }}"

@@ -16,15 +16,15 @@
   - operate == 'attach'
   - target_vm is undefined or disk_size is undefined
 
-- name: Change size unit(G) to number(1000)
-  set_fact:
-    disk_unit: 1000
-  when: disk_size is search("G")
+# - name: Change size unit(G) to number(1000)
+#   set_fact:
+#     disk_unit: 1000
+#   when: disk_size is search("G")
 
-- name: Change size unit(M) to number(100)
-  set_fact:
-    disk_unit: 100
-  when: disk_size is search("M")
+# - name: Change size unit(M) to number(100)
+#   set_fact:
+#     disk_unit: 100
+#   when: disk_size is search("M")
 
 - name: Gather the number of storage attached to the VM
   shell: >
