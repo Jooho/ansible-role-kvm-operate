@@ -71,8 +71,8 @@
       until: shutdown_vm.stdout == 'shut'
 
     - command: "virt-clone -o {{src_vm}} --name {{dest_vm}} --auto-clone"
-    
-    - command: "virsh setmaxmem {{ vm_memory }} {{dest_vm}}"
+
+    - command: "virsh setmaxmem {{dest_vm}} {{ vm_memory }} "
       when: vm_memory is defined
 
     - command: "virsh start {{dest_vm}}"
