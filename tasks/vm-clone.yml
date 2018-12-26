@@ -76,6 +76,9 @@
       when: vm_memory is defined
 
     - command: "virsh start {{dest_vm}}"
+
+    - command: "virsh setmem {{dest_vm}} {{ vm_memory }} "
+      when: vm_memory is defined
   become: yes
   delegate_to: "{{ kvm_install_host }}"
   when: operate == 'clone'
