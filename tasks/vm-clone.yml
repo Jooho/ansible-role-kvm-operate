@@ -23,33 +23,24 @@
 
 - name: Wait for shutdown state of vm
   shell: >
-      virsh dominfo {{ dest_vm }} |grep State|awk '{print $2}'
+      virsh destroy {{ dest_vm }} 
   become: yes
   delegate_to: "{{ kvm_install_host }}"
   register: shutdown_vm
-  until: shutdown_vm.stdout == 'shut'
+  until: shutdown_vm is succeeded
   when:
   - vm_exist.exception is undefined 
   - vm_recreate
 
 - name: Delete the VM if the same VM exist
-  block:
-    - shell: >
-        virsh vol-list "{{ storage_pool | default('default') }}" | grep "{{dest_vm}}" |awk '{print $1}'
-      register: vm_vol_list
-    - command: "virsh vol-delete --pool {{ pool_name }} {{ item }}"
-      with_items:
-      - "{{vm_vol_list.stdout_lines}}"
-      when: vm_vol_list.stdout_lines|length != 0
-
-    - virt: command=undefine name="{{dest_vm}}"
-      register: undefine_vm
-      until: "{{undefine_vm is succeeded}}"
-    - shell: sleep 1
+  shell: >   
+    virsh -c qemu:///system undefine "{{ dest_vm }}" --remove-all-storage
+  register: undefine_vm
+  until: undefine_vm is succeeded
   become: yes
   delegate_to: "{{ kvm_install_host }}"
   when:
-  - vm_exist.exception is defined 
+  - vm_exist.exception is undefined 
   - vm_recreate
 
 - name: Create VM data dir where store vm information
