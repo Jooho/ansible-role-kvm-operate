@@ -1,4 +1,4 @@
-Ansible Role: KVM Operation (Start/Stop/Destroy/Suspend/TeardownClone/Attach Storage)
+Ansible Role: KVM Operation (Start/Stop/Destroy/Suspend/Teardown/Clone/Attach Storage)
 =========
 
 This role help operate VM status or add storage on KVM or clone VM
