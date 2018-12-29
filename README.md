@@ -19,6 +19,7 @@ Role Variables
 | ----------------- | ------------- | ------- | ----------------------------------------------------------------------------------- |
 | kvm_install_host  | localhost     | no      | KVM install host                                                                    |
 | storage_pool_name | default       | no      | KVM storage Pool Name                                                               |
+| virt_operate      | running       | no      | Default image state                                                                 |
 | kind              | undefined     | yes     | Set vm for start/stop/suspend/destory/teardown Or set storage for attach extra disk |
 | operate           | undefined     | yes     | Set start/stop/suspend/destory/teardown for vm Or attach for storage                |
 | src_vm            | undefined     | yes     | Clone operate params. The base vm name                                              |
