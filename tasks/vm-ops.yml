@@ -103,7 +103,7 @@
   block:
     - name: Gather files under KVM storage pool path
       find: 
-        paths: "{{ kvm.storage_pool_dir }}"
+        paths: "{{ kvm_storage_pool_dir }}"
         patterns: "{{ prefix_vm|quote }}*"
       become: yes
       register: vm_images_list

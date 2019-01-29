@@ -18,7 +18,8 @@ Role Variables
 | Name              | Default value | Requird | Description                                                                         |
 | ----------------- | ------------- | ------- | ----------------------------------------------------------------------------------- |
 | kvm_install_host  | localhost     | no      | KVM install host                                                                    |
-| storage_pool_name | default       | no      | KVM storage Pool Name                                                               |
+| kvm_storage_pool_name | default       | no      | KVM storage Pool Name                                                               |
+| kvm_storage_pool_dir | /var/lib/libvirt/images       | no      | KVM storage Pool Dir                                              |
 | virt_operate      | running       | no      | Default image state                                                                 |
 | kind              | undefined     | yes     | Set vm for start/stop/suspend/destory/teardown Or set storage for attach extra disk |
 | operate           | undefined     | yes     | Set start/stop/suspend/destory/teardown for vm Or attach for storage                |
